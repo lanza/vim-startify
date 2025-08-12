@@ -659,7 +659,14 @@ function! s:filter_oldfiles_unsafe(path_prefix, path_format, use_env) abort
       continue
     endif
 
-    let absolute_path = glob(fnamemodify(fname, ":p"))
+
+    " some plugins insert files into v:oldfiles with strange paths such as
+    " '[ Some message ]' and startify errors on attempting to handle them here.
+    try
+      let absolute_path = glob(fnamemodify(fname, ":p"))
+    catch /^Vim\%((\a\+)\)\=:E944:/
+      let absolute_path = ""
+    endtry
     if empty(absolute_path)
           \ || has_key(entries, absolute_path)
           \ || (absolute_path =~ is_dir)
